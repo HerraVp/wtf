@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "wtf",
+  "version": "${version}",
+  "name": "Wtf",
+  "description": "Wtf",
+  "authors": [
+    "Vp"
+  ],
+  "contact": {
+    "website": "https://vp-dev.eu",
+    "repo": "https://github.com/HerraVp"
+  },
+  "license": "All-Rights-Reserved",
+  "icon": "assets/wtf/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "me.vp.wtf.Wtf"
+    ]
+  },
+  "mixins": [
+    "wtf.mixins.json"
+  ],
+  "depends": {
+    "minecraft": "1.18.2+"
+  }
+}
