@@ -84,7 +84,7 @@ public class MixinInGameHud {
         // Players
         DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer,
                 Formatting.GREEN + "Players Nearby: ", 1,
-                80 + mc.textRenderer.fontHeight + 1,
+                180 + mc.textRenderer.fontHeight + 1,
                 0xFFFFFF);
 
         int count = 1;
@@ -105,7 +105,7 @@ public class MixinInGameHud {
 
             DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer,
                     Formatting.GREEN + text, 1,
-                    200 + count * 10, playerColor);
+                    180 + count * 10, playerColor);
             count++;
         }
 
