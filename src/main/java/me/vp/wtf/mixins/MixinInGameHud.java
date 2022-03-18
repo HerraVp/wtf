@@ -105,7 +105,7 @@ public class MixinInGameHud {
 
             DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer,
                     Formatting.GREEN + text, 1,
-                    200 + mc.textRenderer.fontHeight + 1 + count * 10, playerColor);
+                    200 + count * 10, playerColor);
             count++;
         }
 
