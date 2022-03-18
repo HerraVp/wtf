@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022. Created by @HerraVp (https://github.com/HerraVp)
+ */
+
 package me.vp.wtf.mixins;
 
 import me.vp.wtf.Wtf;
@@ -12,18 +16,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(MinecraftClient.class)
 public abstract class MixinMinecraftClient {
 
-    MinecraftClient mc;
-
     @Shadow
     private boolean windowFocused;
-
-    @Shadow
-    public abstract Profiler getProfiler();
 
     @Inject(method = "getFramerateLimit", at = @At("HEAD"), cancellable = true)
     public void getFramerateLimit(CallbackInfoReturnable<Integer> cir) {
 
-        if (!(mc.world == null) && !this.windowFocused) {
+        if (!this.windowFocused) {
             cir.setReturnValue(1);
         }
     }
@@ -31,6 +30,6 @@ public abstract class MixinMinecraftClient {
 
     @Inject(method = "getWindowTitle", at = @At("RETURN"), cancellable = true)
     public void getWindowTitle(CallbackInfoReturnable<String> cir) {
-        cir.setReturnValue(Wtf.client + " " + Wtf.version + " (" + cir.getReturnValue() + ")");
+        cir.setReturnValue(cir.getReturnValue() + " with " + Wtf.client + " " + Wtf.version);
     }
 }

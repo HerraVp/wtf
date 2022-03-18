@@ -3,7 +3,7 @@
   "id": "wtf",
   "version": "${version}",
   "name": "Wtf",
-  "description": "Wtf",
+  "description": "Wtf is a mod that renders useful stuff on screen.",
   "authors": [
     "Vp"
   ],
@@ -15,7 +15,7 @@
   "icon": "assets/wtf/icon.png",
   "environment": "*",
   "entrypoints": {
-    "main": [
+    "client": [
       "me.vp.wtf.Wtf"
     ]
   },
@@ -23,6 +23,7 @@
     "wtf.mixins.json"
   ],
   "depends": {
-    "minecraft": "1.18.2+"
+    "minecraft": "1.18.2+",
+    "java": ">=17"
   }
 }

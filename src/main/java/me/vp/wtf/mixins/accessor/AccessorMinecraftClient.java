@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022. Created by @HerraVp (https://github.com/HerraVp)
+ */
+
 package me.vp.wtf.mixins.accessor;
 
 import net.minecraft.client.MinecraftClient;

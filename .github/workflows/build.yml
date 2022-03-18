@@ -23,7 +23,7 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
-          name: Build
+          name: Wtf
           path: |
             build/libs/wtf-*.jar
             !build/libs/wtf-*-*.jar

@@ -5,9 +5,10 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [],
   "client": [
-    "accessor.AccessorMinecraftClient",
+    "MixinClientBrandRetriever",
     "MixinInGameHud",
-    "MixinMinecraftClient"
+    "MixinMinecraftClient",
+    "accessor.AccessorMinecraftClient"
   ],
   "injectors": {
     "defaultRequire": 1
