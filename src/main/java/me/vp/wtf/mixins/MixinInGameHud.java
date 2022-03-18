@@ -82,6 +82,11 @@ public class MixinInGameHud {
                 0xFFFFFF);
 
         // Players
+        DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer,
+                Formatting.GREEN + "Players Nearby: ", 1,
+                80 + mc.textRenderer.fontHeight + 1,
+                0xFFFFFF);
+
         int count = 1;
         for (Entity e : mc.world.getPlayers().stream()
                 .filter(e -> e != mc.player)
@@ -99,9 +104,8 @@ public class MixinInGameHud {
                     (((int) Math.min(dist * 4.28, 255) & 0xFF) << 8);
 
             DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer,
-                    Formatting.GREEN + "Players Nearby: " + Formatting.RESET + text, 1,
-                    10 + mc.textRenderer.fontHeight + 1,
-                    playerColor);
+                    Formatting.GREEN + text, 1,
+                    200 + mc.textRenderer.fontHeight + 1 + count * 10, playerColor);
             count++;
         }
 
