@@ -10,13 +10,16 @@ import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.MathHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.text.DecimalFormat;
+import java.util.Comparator;
 
 @Mixin(InGameHud.class)
 public class MixinInGameHud {
@@ -45,13 +48,84 @@ public class MixinInGameHud {
                 1,
                 0xFFFFFF);
 
+        // TPS
+        long prevTime = 0;
+        double tps;
+        long lastPacket;
+
+        lastPacket = System.currentTimeMillis();
+        long time = System.currentTimeMillis();
+        long timeOffset = Math.abs(1000 - (time - prevTime)) + 1000;
+        tps = Math.round(MathHelper.clamp(20 / (timeOffset / 1000d), 0, 20) * 100d) / 100d;
+
+        String suffix = "\u00a77";
+        if (lastPacket + 7500 < System.currentTimeMillis())
+            suffix += "....";
+        else if (lastPacket + 5000 < System.currentTimeMillis())
+            suffix += "...";
+        else if (lastPacket + 2500 < System.currentTimeMillis())
+            suffix += "..";
+        else if (lastPacket + 1200 < System.currentTimeMillis())
+            suffix += ".";
+
+        DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer,
+                Formatting.GREEN + "TPS: " + Formatting.RESET + tps + suffix, 1,
+                1 + mc.textRenderer.fontHeight + 1,
+                0xFFFFFF);
+
         // Ping
         PlayerListEntry playerEntry = mc.player.networkHandler.getPlayerListEntry(mc.player.getGameProfile().getId());
         int ping = playerEntry == null ? 0 : playerEntry.getLatency();
         DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer,
                 Formatting.GREEN + "Ping: " + Formatting.RESET + ping + "ms", 1,
-                1 + mc.textRenderer.fontHeight + 1,
+                10 + mc.textRenderer.fontHeight + 1,
                 0xFFFFFF);
+
+        // Players
+        int count = 1;
+        for (Entity e : mc.world.getPlayers().stream()
+                .filter(e -> e != mc.player)
+                .sorted(Comparator.comparing(mc.player::distanceTo)).toList()) {
+            int dist = Math.round(mc.player.distanceTo(e));
+
+            String text =
+                    e.getDisplayName().getString()
+                            + " \u00a77|\u00a7r " +
+                            e.getBlockPos().getX() + " " + e.getBlockPos().getY() + " " + e.getBlockPos().getZ()
+                            + " (" + dist + "m)";
+
+            int playerColor = 0xff000000 |
+                    ((255 - (int) Math.min(dist * 2.1, 255) & 0xFF) << 16) |
+                    (((int) Math.min(dist * 4.28, 255) & 0xFF) << 8);
+
+            DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer,
+                    Formatting.GREEN + "Players Nearby: " + Formatting.RESET + text, 1,
+                    10 + mc.textRenderer.fontHeight + 1,
+                    playerColor);
+            count++;
+        }
+
+
+
+        /* // Biome
+        String biome = mc.world.getBiome(mc.player.getBlockPos()).getKey().toString().toUpperCase();
+
+        DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer,
+                Formatting.GREEN + "Biome: " + Formatting.RESET + biome, 1,
+                30,
+                0xFFFFFF);
+        */
+
+        // BPS
+        DecimalFormat bpsFormat = new DecimalFormat("0.0");
+        final double deltaX = Math.abs(mc.player.getPos().getX() - mc.player.prevX);
+        final double deltaZ = Math.abs(mc.player.getPos().getZ() - mc.player.prevZ);
+        String bps = bpsFormat.format((deltaX + deltaZ) * 20);
+
+        DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer,
+                Formatting.GREEN + "BPS: " + Formatting.RESET + bps, 1, 485,
+                0xFFFFFF);
+
 
         // Coordinates
         final DecimalFormat decimalFormat = new DecimalFormat("###.#");
@@ -64,8 +138,9 @@ public class MixinInGameHud {
             z *= 8;
         }
 
-        final String overWorld = "XYZ: " + Formatting.GREEN + decimalFormat.format(x) + " " + decimalFormat.format(y) + " " + decimalFormat.format(z);
+        final String overWorld = Formatting.GREEN + "XYZ: " + decimalFormat.format(x) + " " + decimalFormat.format(y) + " " + decimalFormat.format(z);
         final String nether = decimalFormat.format(x / 8) + " " + decimalFormat.format(y) + " " + decimalFormat.format(z / 8);
         DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer, overWorld + Formatting.RESET + " | " + Formatting.RED + nether, 1, mc.getWindow().getScaledHeight() - 10, 0xFFFFFF);
+       // DrawableHelper.fill(matrices, mc.textRenderer.getWidth(overWorld + Formatting.RESET + " | " + Formatting.RED + nether), mc.textRenderer.fontHeight + 10, mc.textRenderer.getWidth(overWorld + Formatting.RESET + " | " + Formatting.RED + nether), mc.textRenderer.fontHeight + 10, 0x70003030);
     }
 }
