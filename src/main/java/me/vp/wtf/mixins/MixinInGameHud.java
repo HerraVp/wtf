@@ -33,6 +33,7 @@ public class MixinInGameHud {
         MinecraftClient mc = MinecraftClient.getInstance();
 
         if (mc.player == null || mc.world == null) return;
+        if (mc.options.debugEnabled) return;
 
         // Durability
         if (!mc.player.getMainHandStack().isEmpty() && mc.player.getMainHandStack().isDamageable()) {
