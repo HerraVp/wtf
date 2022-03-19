@@ -19,7 +19,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
 @Mixin(InGameHud.class)
 public class MixinInGameHud {
@@ -49,27 +51,10 @@ public class MixinInGameHud {
                 0xFFFFFF);
 
         // TPS
-        long prevTime = 0;
-        double tps;
-        long lastPacket;
-
-        lastPacket = System.currentTimeMillis();
-        long time = System.currentTimeMillis();
-        long timeOffset = Math.abs(1000 - (time - prevTime)) + 1000;
-        tps = Math.round(MathHelper.clamp(20 / (timeOffset / 1000d), 0, 20) * 100d) / 100d;
-
-        String suffix = "\u00a77";
-        if (lastPacket + 7500 < System.currentTimeMillis())
-            suffix += "....";
-        else if (lastPacket + 5000 < System.currentTimeMillis())
-            suffix += "...";
-        else if (lastPacket + 2500 < System.currentTimeMillis())
-            suffix += "..";
-        else if (lastPacket + 1200 < System.currentTimeMillis())
-            suffix += ".";
+        String tps = String.valueOf(getAverageTPS());
 
         DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer,
-                Formatting.GREEN + "TPS: " + Formatting.RESET + tps + suffix, 1,
+                Formatting.GREEN + "TPS: " + Formatting.RESET + tps, 1,
                 1 + mc.textRenderer.fontHeight + 1,
                 0xFFFFFF);
 
@@ -146,5 +131,43 @@ public class MixinInGameHud {
         final String nether = decimalFormat.format(x / 8) + " " + decimalFormat.format(y) + " " + decimalFormat.format(z / 8);
         DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer, overWorld + Formatting.RESET + " | " + Formatting.RED + nether, 1, mc.getWindow().getScaledHeight() - 10, 0xFFFFFF);
        // DrawableHelper.fill(matrices, mc.textRenderer.getWidth(overWorld + Formatting.RESET + " | " + Formatting.RED + nether), mc.textRenderer.fontHeight + 10, mc.textRenderer.getWidth(overWorld + Formatting.RESET + " | " + Formatting.RED + nether), mc.textRenderer.fontHeight + 10, 0x70003030);
+
+        // Sprinting info
+        String movementInfo = "";
+        if (mc.player.isSprinting() || mc.options.sprintKey.isPressed()) {
+            movementInfo = "You are currently sprinting";
+            DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer, Formatting.GREEN + movementInfo, mc.getWindow().getScaledWidth() - mc.textRenderer.getWidth(movementInfo), mc.getWindow().getScaledHeight() - 10, 0xFFFFFF);
+        }
+        else if (mc.player.getAbilities().flying || mc.player.isFallFlying()) {
+            movementInfo = "You are currently flying";
+            DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer, Formatting.GREEN + movementInfo, mc.getWindow().getScaledWidth() - mc.textRenderer.getWidth(movementInfo), mc.getWindow().getScaledHeight() - 10, 0xFFFFFF);
+        }
+        else if (mc.player.isSneaking() || mc.player.isInSneakingPose()) {
+            movementInfo = "You are currently sneaking";
+            DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer, Formatting.GREEN + movementInfo, mc.getWindow().getScaledWidth() - mc.textRenderer.getWidth(movementInfo), mc.getWindow().getScaledHeight() - 10, 0xFFFFFF);
+        }
+        else {
+            movementInfo = "";
+            DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer, Formatting.GREEN + movementInfo, mc.getWindow().getScaledWidth() - mc.textRenderer.getWidth(movementInfo), mc.getWindow().getScaledHeight() - 10, 0xFFFFFF);
+        }
+    }
+
+    private List<Long> reports = new ArrayList<>();
+
+    public double getTPS(int averageOfSeconds) {
+        if (reports.size() < 2) {
+            return 20.0; // we can't compare yet
+        }
+
+        long currentTimeMS = reports.get(reports.size() - 1);
+        long previousTimeMS = reports.get(reports.size() - averageOfSeconds);
+
+        // on average, how long did it take for 20 ticks to execute? (ideal value: 1 second)
+        double longTickTime = Math.max((currentTimeMS - previousTimeMS) / (1000.0 * (averageOfSeconds - 1)), 1.0);
+        return 20 / longTickTime;
+    }
+
+    public double getAverageTPS() {
+        return getTPS(reports.size());
     }
 }
