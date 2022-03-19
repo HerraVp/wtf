@@ -76,7 +76,7 @@ public class MixinInGameHud {
                 0xFFFFFF);
 
         int count = 1;
-        for (Entity e : mc.world.getPlayers().stream()
+        for (Entity e : mc.world.getPlayers().stream().limit(10)
                 .filter(e -> e != mc.player)
                 .sorted(Comparator.comparing(mc.player::distanceTo)).toList()) {
             int dist = Math.round(mc.player.distanceTo(e));
@@ -135,7 +135,7 @@ public class MixinInGameHud {
         DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer, overWorld + Formatting.RESET + " | " + Formatting.RED + nether, 1, mc.getWindow().getScaledHeight() - 10, 0xFFFFFF);
        // DrawableHelper.fill(matrices, mc.textRenderer.getWidth(overWorld + Formatting.RESET + " | " + Formatting.RED + nether), mc.textRenderer.fontHeight + 10, mc.textRenderer.getWidth(overWorld + Formatting.RESET + " | " + Formatting.RED + nether), mc.textRenderer.fontHeight + 10, 0x70003030);
 
-        // Sprinting info
+        // Movement info
         String movementInfo = "";
         if (mc.player.isSprinting() || mc.options.sprintKey.isPressed() && mc.player.isOnGround()) {
             movementInfo = "You are currently sprinting";
