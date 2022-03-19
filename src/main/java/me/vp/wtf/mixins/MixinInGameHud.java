@@ -4,10 +4,12 @@
 
 package me.vp.wtf.mixins;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import me.vp.wtf.mixins.accessor.AccessorMinecraftClient;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.hud.InGameHud;
+import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -134,7 +136,7 @@ public class MixinInGameHud {
 
         // Sprinting info
         String movementInfo = "";
-        if (mc.player.isSprinting() || mc.options.sprintKey.isPressed()) {
+        if (mc.player.isSprinting() || mc.options.sprintKey.isPressed() && mc.player.isOnGround()) {
             movementInfo = "You are currently sprinting";
             DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer, Formatting.GREEN + movementInfo, mc.getWindow().getScaledWidth() - mc.textRenderer.getWidth(movementInfo), mc.getWindow().getScaledHeight() - 10, 0xFFFFFF);
         }
@@ -142,7 +144,7 @@ public class MixinInGameHud {
             movementInfo = "You are currently flying";
             DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer, Formatting.GREEN + movementInfo, mc.getWindow().getScaledWidth() - mc.textRenderer.getWidth(movementInfo), mc.getWindow().getScaledHeight() - 10, 0xFFFFFF);
         }
-        else if (mc.player.isSneaking() || mc.player.isInSneakingPose()) {
+        else if (mc.player.isSneaking() || mc.player.isInSneakingPose() && mc.player.isOnGround()) {
             movementInfo = "You are currently sneaking";
             DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer, Formatting.GREEN + movementInfo, mc.getWindow().getScaledWidth() - mc.textRenderer.getWidth(movementInfo), mc.getWindow().getScaledHeight() - 10, 0xFFFFFF);
         }
@@ -150,19 +152,28 @@ public class MixinInGameHud {
             movementInfo = "";
             DrawableHelper.drawStringWithShadow(matrices, mc.textRenderer, Formatting.GREEN + movementInfo, mc.getWindow().getScaledWidth() - mc.textRenderer.getWidth(movementInfo), mc.getWindow().getScaledHeight() - 10, 0xFFFFFF);
         }
+
+        // Player Model
+        if (!(mc.player == null)) {
+            float yaw = MathHelper.wrapDegrees(mc.player.prevYaw + (mc.player.getYaw() - mc.player.prevYaw) * mc.getTickDelta());
+            float pitch = mc.player.getPitch();
+            matrices.push();
+            InventoryScreen.drawEntity(mc.getWindow().getScaledWidth() - 20, 50, 25, -yaw, -pitch, mc.player);
+            RenderSystem.enableDepthTest();
+            matrices.pop();
+        }
     }
 
     private List<Long> reports = new ArrayList<>();
 
     public double getTPS(int averageOfSeconds) {
         if (reports.size() < 2) {
-            return 20.0; // we can't compare yet
+            return 20.0;
         }
 
         long currentTimeMS = reports.get(reports.size() - 1);
         long previousTimeMS = reports.get(reports.size() - averageOfSeconds);
 
-        // on average, how long did it take for 20 ticks to execute? (ideal value: 1 second)
         double longTickTime = Math.max((currentTimeMS - previousTimeMS) / (1000.0 * (averageOfSeconds - 1)), 1.0);
         return 20 / longTickTime;
     }
